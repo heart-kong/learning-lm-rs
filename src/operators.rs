@@ -93,12 +93,16 @@ pub fn rms_norm(y: &mut Tensor<f32>, x: &Tensor<f32>, w: &Tensor<f32>, epsilon: 
                 .iter()
                 .map(|f| f * f)
                 .sum();
-            let sqrt = (sum / dim_last_2th as f32 + epsilon).sqrt();
+            let sqrt = (sum / dim_last_1th as f32 + epsilon).sqrt();
             for dl1 in 0..dim_last_1th {
                 y[offset + dl1] = w[dl1] * x[offset + dl1] / sqrt;
             }
         }
     }
+}
+
+pub fn sigmoid(x: f32) -> f32 {
+    1.0 / (1.0 + (-x).exp())
 }
 
 // y = sigmoid(x) * x * y
