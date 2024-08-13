@@ -118,7 +118,40 @@ pub fn silu(y: &mut Tensor<f32>, x: &Tensor<f32>) {
 // C = beta * C + alpha * A @ B^T
 // hint: You don't need to do an explicit transpose of B
 pub fn matmul_transb(c: &mut Tensor<f32>, beta: f32, a: &Tensor<f32>, b: &Tensor<f32>, alpha: f32) {
-    todo!("实现 matmul_transb，计算前做一些必要的检查会帮助你后续调试");
+    assert!(c.shape().len() > 1 && a.shape().len() > 1 && b.shape().len() > 1);
+    
+    let a_dim = a.shape().len();
+    let a_last_2_dim =  a.shape()[a_dim - 2];
+    let a_last_1_dim = a.shape()[a_dim - 1];
+    
+    let b_dim = b.shape().len();
+    let _b_last_2_dim =  b.shape()[b_dim - 2];
+    let b_last_1_dim = b.shape()[b_dim - 1];
+    
+    let c_dim = c.shape().len();
+    let c_last_2_dim =  c.shape()[c_dim - 2];
+    let c_last_1_dim = c.shape()[c_dim - 1];
+    
+    assert!(c_dim + 2 == a_dim + b_dim);
+    // c 的最后一个维度等于 b的第一个维度
+    assert!(c.shape().last().unwrap() == &b.shape()[0]);
+    // a b 的最后一个维度相同
+    assert!(a.shape().last() == b.shape().last());
+
+    let c = unsafe{ c.data_mut() };
+    let a = a.data();
+    let b = b.data();
+
+    // 仅当全为矩阵时成立
+    for cl2d in 0..c_last_2_dim {
+        for cl1d in 0..c_last_1_dim {
+            let sum = (0..a_last_1_dim)
+                .map(|n| a[cl2d * a_last_1_dim + n] * b[cl1d * b_last_1_dim + n])
+                .sum::<f32>();
+            c[cl2d * c_last_1_dim + cl1d] = beta * c[cl2d * c_last_1_dim + cl1d] + alpha * sum;
+        }
+    }
+
 }
 
 // Dot product of two tensors (treated as vectors)
